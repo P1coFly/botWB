@@ -111,8 +111,9 @@ def get_items(file_path):
         phone.append(item_receiver[1].text.strip())
         address.append(item_address[0].text.strip().replace('\n','').replace('  ','').replace("'",""))
     
+    filename_csv = f'{datetime.now().strftime("%m_%d_%Y_%H_%M")}.csv'
     
-    with open(f'{datetime.now().strftime("%m_%d_%Y_%H_%M")}.csv', 'w', encoding="cp1251", newline="") as file:
+    with open(filename_csv, 'w', encoding="cp1251", newline="") as file:
         writer = csv.writer(file, delimiter=";")
         
         writer.writerow(
@@ -125,7 +126,7 @@ def get_items(file_path):
     
     result = list(zip(*[address,receivers,phone]))
     
-    with open(f'{datetime.now().strftime("%m_%d_%Y_%H_%M")}.csv', 'a', encoding="cp1251", newline="") as file:
+    with open(filename_csv, 'a', encoding="cp1251", newline="") as file:
         writer = csv.writer(file, delimiter=";")
         for r in result:
             writer.writerow(
@@ -134,7 +135,7 @@ def get_items(file_path):
                 )
             )
 
-    print(f'Файл {datetime.now().strftime("%m/%d/%Y_%H_%M_%S")}.csv успещно создан')
+    print(f'Файл {filename_csv} успеiно создан')
     #with open("items_receivers.txt","w", encoding="utf-8") as file:
         #for receiver in item_receiver:
             #file.write(f"{receiver}\n")
