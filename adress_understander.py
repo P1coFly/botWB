@@ -7,11 +7,12 @@ for i in range(1,len(text)):
     phone = text[text.find('phone":"+7 (***) *** ')+len('phone":"+7 (***) *** '):text.find('"},"address":')]
     print(phone)
     #исправить адресс, там разные широты, надо обрезать по другому
-    adress = text[text.find('"address":{"id":209149,"latitude":55.885326,"longitude":37.609625,"value":"')+len('"address":{"id":209149,"latitude":55.885326,"longitude":37.609625,"value":"'):text.find('"},"auto_pickup"')]
+    adress = text[text.find('value":"')+len('value":"'):text.find('"},"auto_pickup"')]
     print(adress)
-    subject = text[text.find('"NOVELLI / ')+len('"NOVELLI / '):text.find(' ","price":')]
+    subject = text[text.find(' / ')+len(' / '):text.find('","price":')]
     print(subject)
-    text = text[text.find('"price":') + 8:]
-# number = text.find('"price":')
-# slice_object = slice(len(text),number)
-# print(text[slice_object])
+    if first_name == '':
+        break
+    else:
+        text = text[text.find('"price":') + 8:]
+
