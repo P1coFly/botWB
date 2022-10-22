@@ -97,22 +97,37 @@ def get_items(file_path):
         
     soup = BeautifulSoup(src,'lxml')
     
-    #Добываем Получателя и Телефон
+    #Добываем Адрес, Получателя, Телефон и Код
     items_divs= soup.find_all("ul", class_="delivery__receiver receiver")
     
+    #Добываем наименование товара
+    products_divs = soup.find_all("table", class_="delivery__table table")
+    
+    #Достаём нужную информацию в List
     receivers = []
     phone = []
     address = []
+    code = []
     for item in items_divs:
         item_receiver = item.find_all("span",class_="receiver__value")
         item_address = item.find_all("a",class_="receiver__value")
         
         receivers.append(item_receiver[0].text.strip())
         phone.append(item_receiver[1].text.strip())
+        code.append(item_receiver[2].text.strip())
+        
         address.append(item_address[0].text.strip().replace('\n','').replace('  ','').replace("'",""))
     
+    product = []
+    for prod in products_divs:
+        item_product = prod.find_all("p",class_="cell__name")
+        
+        product.append(item_product[0].text.strip())
+    
+    #В качестве имени используем текующую дату
     filename_csv = f'{datetime.now().strftime("%m_%d_%Y_%H_%M")}.csv'
     
+    #создаём csv с заголовками
     with open(filename_csv, 'w', encoding="cp1251", newline="") as file:
         writer = csv.writer(file, delimiter=";")
         
@@ -120,12 +135,16 @@ def get_items(file_path):
             (
                 'Адрес',
                 'Получатель',
-                'Телефон'
+                'Телефон',
+                'Код',
+                'Товар'
             )
         )
     
-    result = list(zip(*[address,receivers,phone]))
+    #Собираем данные в одну строчку, чтобы съел csv
+    result = list(zip(*[address,receivers,phone,code,product]))
     
+    #Добавляем data в csv
     with open(filename_csv, 'a', encoding="cp1251", newline="") as file:
         writer = csv.writer(file, delimiter=";")
         for r in result:
@@ -135,10 +154,7 @@ def get_items(file_path):
                 )
             )
 
-    print(f'Файл {filename_csv} успеiно создан')
-    #with open("items_receivers.txt","w", encoding="utf-8") as file:
-        #for receiver in item_receiver:
-            #file.write(f"{receiver}\n")
+    print(f'Файл {filename_csv} успешно создан!')
     
 
 if __name__=='__main__':
