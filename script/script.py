@@ -52,7 +52,8 @@ def main():
         #Выбираем только заказы, которые готовы в выдаче
         driver.find_element(By.CLASS_NAME,"v-dropdown-menu__trigger").click()
         time.sleep(1)
-        driver.find_element(By.XPATH,'//*[@id="root"]/div[1]/div/div[2]/div[1]/div[1]/div/div[2]/div[2]/div/ul/li[3]/button').click()
+        
+        driver.find_element(By.XPATH,"//button[contains(text(),'Готовы к выдаче')]").click()
         time.sleep(3)
         
           
@@ -70,17 +71,44 @@ def main():
             if new_height == last_height:
                 break
             last_height = new_height
-            
-
-        #t = driver.find_elements(By.CLASS_NAME,"delivery__header.delivery-header")
-        #for test in t:
-           # driver.execute_script("arguments[0].scrollIntoView();", test)
-           # time.sleep(1)
-            #test.click()
-                          
+        
         #сохраняем страницу
         with open('data.html','w', encoding="utf-8") as file:
             file.write(driver.page_source)
+        
+        #Достаём qr-код
+        #Открываем все заказы
+        del_item = driver.find_elements(By.CLASS_NAME,"delivery__header.delivery-header")
+        driver.execute_script("arguments[0].scrollIntoView();", del_item[0])
+        time.sleep(1)
+        for item in del_item:
+            try:
+                driver.execute_script("arguments[0].scrollIntoView();", item)
+                time.sleep(0.5)
+                item.click()
+                 
+            except:
+                continue
+        
+        #получаем qr
+        qr_item = driver.find_elements(By.XPATH,"//button[@class ='receiver__btn-qr']")
+        i = 1
+        driver.execute_script("arguments[0].scrollIntoView();", qr_item[0])
+        time.sleep(1)
+        for item in qr_item:
+            try:
+                driver.execute_script("arguments[0].scrollIntoView();", item)
+                time.sleep(0.5)
+                item.click()
+                with open(f'qr\\{i}.png', 'wb') as file:
+                    file.write(driver.find_element(By.CLASS_NAME,'modal__slot').screenshot_as_png)
+                i+=1
+                time.sleep(0.5)
+                driver.find_element(By.CLASS_NAME,"modal__btn-deny").click()
+                time.sleep(0.5)
+                
+            except:
+                continue
         
         time.sleep(3)
     except Exception as ex:
@@ -109,14 +137,17 @@ def get_items(file_path):
     address = []
     code = []
     for item in items_divs:
-        item_receiver = item.find_all("span",class_="receiver__value")
-        item_address = item.find_all("a",class_="receiver__value")
-        
-        receivers.append(item_receiver[0].text.strip())
-        phone.append(item_receiver[1].text.strip())
-        code.append(item_receiver[2].text.strip())
-        
-        address.append(item_address[0].text.strip().replace('\n','').replace('  ','').replace("'",""))
+        try:
+            item_receiver = item.find_all("span",class_="receiver__value")
+            item_address = item.find_all("a",class_="receiver__value")
+            
+            receivers.append(item_receiver[0].text.strip())
+            phone.append(item_receiver[1].text.strip())
+            code.append(item_receiver[2].text.strip())
+            
+            address.append(item_address[0].text.strip().replace('\n','').replace('  ','').replace("'",""))
+        except:
+            continue
     
     product = []
     for prod in products_divs:
