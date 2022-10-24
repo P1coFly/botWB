@@ -96,7 +96,6 @@ def main():
         
         #получаем qr
         qr_item = driver.find_elements(By.XPATH,"//button[@class ='receiver__btn-qr']")
-        i = 1
         driver.execute_script("arguments[0].scrollIntoView();", qr_item[0])
         time.sleep(1)
         for item in qr_item:
@@ -112,7 +111,6 @@ def main():
                 #img_data = b64decode(src)
                 qr.append(src)
 
-                i+=1
                 time.sleep(0.5)
                 driver.find_element(By.CLASS_NAME,"modal__btn-deny").click()
                 time.sleep(0.5)
