@@ -7,9 +7,10 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import time
 from datetime import datetime
+from base64 import b64decode
 
 
-
+qr = []
 url = "https://app.mpboost.pro/delivery"
 
 option = webdriver.ChromeOptions()
@@ -100,8 +101,14 @@ def main():
                 driver.execute_script("arguments[0].scrollIntoView();", item)
                 time.sleep(0.5)
                 item.click()
-                with open(f'qr\\{i}.png', 'wb') as file:
-                    file.write(driver.find_element(By.CLASS_NAME,'modal__slot').screenshot_as_png)
+                time.sleep(0.5)
+                
+                img = driver.find_element(By.CLASS_NAME,'modal__qr-code')
+                src = img.get_attribute('src')
+                src = src.split('data:image/png;base64,')[1]
+                #img_data = b64decode(src)
+                qr.append(src)
+
                 i+=1
                 time.sleep(0.5)
                 driver.find_element(By.CLASS_NAME,"modal__btn-deny").click()
@@ -168,12 +175,13 @@ def get_items(file_path):
                 'Получатель',
                 'Телефон',
                 'Код',
-                'Товар'
+                'Товар',
+                'qr'
             )
         )
     
     #Собираем данные в одну строчку, чтобы съел csv
-    result = list(zip(*[address,receivers,phone,code,product]))
+    result = list(zip(*[address,receivers,phone,code,product,qr]))
     
     #Добавляем data в csv
     with open(filename_csv, 'a', encoding="cp1251", newline="") as file:
@@ -189,5 +197,5 @@ def get_items(file_path):
     
 
 if __name__=='__main__':
-    #main()
+    main()
     get_items("data.html")
