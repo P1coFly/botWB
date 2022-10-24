@@ -8,7 +8,8 @@ from bs4 import BeautifulSoup
 import time
 from datetime import datetime
 from base64 import b64decode
-
+import pathlib
+from pathlib import Path
 
 qr = []
 url = "https://app.mpboost.pro/delivery"
@@ -24,8 +25,10 @@ action = ActionChains(driver)
 
 def main():
     try:
+        #Получаем строку, содержащую путь к chromedriver:
+        path = Path(pathlib.Path.cwd(),"script","chromedriver.exe") 
         driver = webdriver.Chrome(
-    executable_path='C:\\Users\\Art\\Desktop\\botwb\\script\\chromedriver.exe',
+    executable_path=path,
     options=option
     )
         
