@@ -88,7 +88,7 @@ def main():
         for item in del_item:
             try:
                 driver.execute_script("arguments[0].scrollIntoView();", item)
-                time.sleep(0.5)
+                time.sleep(0.3)
                 item.click()
                  
             except:
@@ -101,9 +101,9 @@ def main():
         for item in qr_item:
             try:
                 driver.execute_script("arguments[0].scrollIntoView();", item)
-                time.sleep(0.5)
+                time.sleep(0.3)
                 item.click()
-                time.sleep(0.5)
+                time.sleep(0.3)
                 
                 img = driver.find_element(By.CLASS_NAME,'modal__qr-code')
                 src = img.get_attribute('src')
@@ -111,9 +111,8 @@ def main():
                 #img_data = b64decode(src)
                 qr.append(src)
 
-                time.sleep(0.5)
                 driver.find_element(By.CLASS_NAME,"modal__btn-deny").click()
-                time.sleep(0.5)
+                time.sleep(0.3)
                 
             except:
                 continue
@@ -133,35 +132,36 @@ def get_items(file_path):
         
     soup = BeautifulSoup(src,'lxml')
     
-    #Добываем Адрес, Получателя, Телефон и Код
-    items_divs= soup.find_all("ul", class_="delivery__receiver receiver")
-    
-    #Добываем наименование товара
-    products_divs = soup.find_all("table", class_="delivery__table table")
+    #Добываем Адрес, Получателя, Телефон, Код и Наименование товара 
+    items_divs= soup.find_all("div", class_="delivery")
+    items_divs.pop(0)
     
     #Достаём нужную информацию в List
     receivers = []
     phone = []
     address = []
     code = []
+    product = []
     for item in items_divs:
         try:
             item_receiver = item.find_all("span",class_="receiver__value")
             item_address = item.find_all("a",class_="receiver__value")
+            item_product = item.find_all("p",class_="cell__name")
             
+            
+            code.append(item_receiver[2].text.strip())
             receivers.append(item_receiver[0].text.strip())
             phone.append(item_receiver[1].text.strip())
-            code.append(item_receiver[2].text.strip())
             
             address.append(item_address[0].text.strip().replace('\n','').replace('  ','').replace("'",""))
+       
+            if len(item_product)>1:
+                product.append(' '.join([i.text.strip() for i in item_product]))
+            else:
+                product.append(item_product[0].text.strip())
         except:
             continue
-    
-    product = []
-    for prod in products_divs:
-        item_product = prod.find_all("p",class_="cell__name")
         
-        product.append(item_product[0].text.strip())
     
     #В качестве имени используем текующую дату
     filename_csv = f'{datetime.now().strftime("%m_%d_%Y_%H_%M")}.csv'
@@ -182,8 +182,8 @@ def get_items(file_path):
         )
     
     #Собираем данные в одну строчку, чтобы съел csv
-    result = list(zip(*[address,receivers,phone,code,product,qr]))
-    
+    result = list(zip(*[address,receivers,phone,code,product]))
+    print(len(address),len(receivers),len(phone),len(code),len(product))
     #Добавляем data в csv
     with open(filename_csv, 'a', encoding="cp1251", newline="") as file:
         writer = csv.writer(file, delimiter=";")
@@ -196,7 +196,14 @@ def get_items(file_path):
 
     print(f'Файл {filename_csv} успешно создан!')
     
-
+    for f in pathlib.Path.cwd().glob("**/*"):
+        if str(f).endswith("csv") and f != Path(pathlib.Path.cwd(),filename_csv):
+            print(f,Path(pathlib.Path.cwd(),filename_csv))
+            f.unlink()
+    
+    
 if __name__=='__main__':
+    start_time = time.time()
     main()
     get_items("data.html")
+    print("--- %s seconds ---" % (time.time() - start_time))
