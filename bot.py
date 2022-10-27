@@ -11,7 +11,7 @@ dp = Dispatcher(bot)
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(msg: types.Message):
-    await bot.send_message(msg.from_user.id,"Привет!\nНапиши мне пароль!")
+    await bot.send_message(msg.from_user.id,"Привет!\nНапиши мне адрес!")
 
     
 @dp.message_handler()
