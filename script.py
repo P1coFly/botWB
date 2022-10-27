@@ -26,7 +26,7 @@ action = ActionChains(driver)
 def main():
     try:
         #Получаем строку, содержащую путь к chromedriver:
-        path = Path(pathlib.Path.cwd(),"script","chromedriver.exe") 
+        path = Path(pathlib.Path.cwd(),"chromedriver.exe") 
         driver = webdriver.Chrome(
     executable_path=path,
     options=option
