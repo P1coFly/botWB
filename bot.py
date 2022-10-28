@@ -50,9 +50,10 @@ async def set_password(msg:types.Message,state:FSMContext):
     else:
         global data
         for index, item in enumerate(data):
-            if len(set(msg.text.lower().split()) & set(item.get("Адрес").lower().translate(str.maketrans('', '', string.punctuation)).split())) == len(set(msg.text.lower().split())):
-                await bot.send_photo(chat_id=msg.from_user.id,photo=b64decode(item.get('qr')))
-                await bot.send_message(msg.from_user.id,f"Адрес найден\n {item.get('Адрес')}\n{item.get('Получатель')}")
+            if len(set(msg.text.lower().translate(str.maketrans('', '', string.punctuation)).split()) & set(item.get("Адрес").lower().translate(str.maketrans('', '', string.punctuation)).split())) == len(set(msg.text.lower().split())):
+                caption = f"{item.get('Адрес')}\n{item.get('Получатель')}\n{item.get('Телефон')}\n{item.get('Код')}\n{item.get('Товар')}"
+                await bot.send_photo(chat_id=msg.from_user.id,photo=b64decode(item.get('qr')),caption=caption)
+                
 
 
 if __name__ == '__main__':
