@@ -1,4 +1,5 @@
 import csv
+import json
 from lib2to3.pgen2 import driver
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
@@ -164,41 +165,24 @@ def get_items(file_path):
         
     
     #В качестве имени используем текующую дату
-    filename_csv = f'{datetime.now().strftime("%m_%d_%Y_%H_%M")}.csv'
-    
-    #создаём csv с заголовками
-    with open(filename_csv, 'w', encoding="cp1251", newline="") as file:
-        writer = csv.writer(file, delimiter=";")
-        
-        writer.writerow(
-            (
-                'Адрес',
-                'Получатель',
-                'Телефон',
-                'Код',
-                'Товар',
-                'qr'
-            )
-        )
-    
-    #Собираем данные в одну строчку, чтобы съел csv
-    result = list(zip(*[address,receivers,phone,code,product]))
-    print(len(address),len(receivers),len(phone),len(code),len(product))
-    #Добавляем data в csv
-    with open(filename_csv, 'a', encoding="cp1251", newline="") as file:
-        writer = csv.writer(file, delimiter=";")
-        for r in result:
-            writer.writerow(
-                (
-                r
-                )
-            )
+    filename_json = f'{datetime.now().strftime("%m_%d_%Y")}.json'
 
-    print(f'Файл {filename_csv} успешно создан!')
+    #Собираем данные в одну строчку, чтобы съел csv
+    result = list(zip(*[address,receivers,phone,code,product,qr]))
+    headers_json = ['Адрес','Получатель','Телефон','Код','Товар','qr']
+    
+    result_dict = []
+    for r in result:
+        result_dict.append(dict(zip(headers_json, r)))
+        
+    with open(filename_json,'w', encoding='utf-8') as file:
+        json.dump(result_dict,file, indent=4, ensure_ascii=False)
+    
+    print(f'Файл {filename_json} успешно создан!')
     
     for f in pathlib.Path.cwd().glob("**/*"):
-        if str(f).endswith("csv") and f != Path(pathlib.Path.cwd(),filename_csv):
-            print(f,Path(pathlib.Path.cwd(),filename_csv))
+        if str(f).endswith("json") and f != Path(pathlib.Path.cwd(),filename_json):
+            print(f,Path(pathlib.Path.cwd(),filename_json))
             f.unlink()
     
     

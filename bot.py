@@ -1,3 +1,4 @@
+import json
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher, FSMContext
 from aiogram.dispatcher.filters.state import State
@@ -5,7 +6,9 @@ from aiogram.utils import executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from db import DataBase
 from config import TOKEN, correct_password
-
+import pathlib
+import string 
+from base64 import b64decode
 
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
@@ -13,7 +16,15 @@ dp = Dispatcher(bot,storage=storage)
 db = DataBase('userdb.db')
 
 password=State()
+data =[]
 
+def get_df():
+    for f in pathlib.Path.cwd().glob('*.json'):
+            filename = str(f)
+
+    with open(filename, encoding='utf-8') as file:
+        global data
+        data=json.load(file)
 
 
 
@@ -29,7 +40,6 @@ async def process_start_command(msg: types.Message):
 
 @dp.message_handler(state=password)
 async def set_password(msg:types.Message,state:FSMContext):
-    print(msg)
     if not db.user_exists(msg.from_user.id):
         if msg.text == correct_password:
             db.add_user(msg.from_user.id)
@@ -38,11 +48,14 @@ async def set_password(msg:types.Message,state:FSMContext):
         else:
             await bot.send_message(msg.from_user.id,"Неверный пароль")
     else:
-        await bot.send_message(msg.from_user.id, msg.text)
+        global data
+        for index, item in enumerate(data):
+            if len(set(msg.text.lower().split()) & set(item.get("Адрес").lower().translate(str.maketrans('', '', string.punctuation)).split())) == len(set(msg.text.lower().split())):
+                await bot.send_photo(chat_id=msg.from_user.id,photo=b64decode(item.get('qr')))
+                await bot.send_message(msg.from_user.id,f"Адрес найден\n {item.get('Адрес')}\n{item.get('Получатель')}")
 
-
-    
 
 if __name__ == '__main__':
     print("Start work")
+    get_df()
     executor.start_polling(dp)
