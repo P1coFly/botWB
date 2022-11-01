@@ -51,13 +51,11 @@ async def set_password(msg:types.Message,state:FSMContext):
         global data
         print(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()))
         for index, item in enumerate(data):
-            
             if len(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()) & set(item.get("Адрес").lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split())) == len(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split())):
                 print(set(item.get("Адрес").lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()))
                 caption = f"{item.get('Адрес')}\n{item.get('Получатель')}\n{item.get('Телефон')}\n{item.get('Код')}\n{item.get('Товар')}"
                 await bot.send_photo(chat_id=msg.from_user.id,photo=b64decode(item.get('qr')),caption=caption)
                 
-
 
 if __name__ == '__main__':
     print("Start work")
