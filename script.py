@@ -1,16 +1,13 @@
-import csv
 import json
-from lib2to3.pgen2 import driver
 from selenium import webdriver
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import time
 from datetime import datetime
-from base64 import b64decode
 import pathlib
 from pathlib import Path
+import schedule
 
 qr = []
 url = "https://app.mpboost.pro/delivery"
@@ -22,9 +19,9 @@ option.add_argument(f'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) Apple
 phone ='+79959020721'
 password = 'DKeouw'
 
-action = ActionChains(driver)
-
 def main():
+    start_time = time.time()
+    
     try:
         #Получаем строку, содержащую путь к chromedriver:
         path = Path(pathlib.Path.cwd(),"chromedriver.exe") 
@@ -124,6 +121,8 @@ def main():
     finally:
         driver.close()
         driver.quit()
+        get_items("data.html")
+        print("--- Script complete: %s minutes ---" % ((time.time() - start_time)/60))
 
 def get_items(file_path):
     print("Обработка данных...")
@@ -180,14 +179,18 @@ def get_items(file_path):
     
     print(f'Файл {filename_json} успешно создан!')
     
-    for f in pathlib.Path.cwd().glob("**/*"):
+    for f in pathlib.Path.cwd().glob("*.json"):
         if str(f).endswith("json") and f != Path(pathlib.Path.cwd(),filename_json):
             print(f,Path(pathlib.Path.cwd(),filename_json))
             f.unlink()
     
+
+def start():
+    schedule.every().day.at('10:01').do(main)
     
+    while True:
+        schedule.run_pending()
+    
+       
 if __name__=='__main__':
-    start_time = time.time()
-    main()
-    get_items("data.html")
-    print("--- %s seconds ---" % (time.time() - start_time))
+    start()
