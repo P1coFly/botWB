@@ -63,7 +63,7 @@ async def set_password(msg:types.Message,state:FSMContext):
                     caption = f"{item.get('Адрес')}\n{item.get('Получатель')}\n{item.get('Телефон')}\n{item.get('Код')}\n{item.get('Товар')}"
                     await bot.send_photo(chat_id=msg.from_user.id, photo=b64decode(item.get('qr')), caption=caption)
         else:
-            await bot.send_message(msg.from_user.id, "Я нашёл несколько адресов, введите его ещё раз")
+            await bot.send_message(msg.from_user.id, "Я нашёл несколько адресов. \nВведи адрес ещё раз")
             uniq_set.clear()
 
 
