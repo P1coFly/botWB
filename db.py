@@ -13,3 +13,7 @@ class DataBase:
     def add_user(self,user_tg_id):
         with self.connection:
             return self.cursor.execute("INSERT INTO 'users' ('user_tg_id') VALUES (?)", (user_tg_id,))
+    
+    def get_users(self):
+        with self.connection:
+            return self.cursor.execute("SELECT 'user_id' FROM 'users'").fetchall()

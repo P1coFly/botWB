@@ -7,32 +7,40 @@ import time
 from datetime import datetime
 import pathlib
 from pathlib import Path
-import schedule
+
 
 qr = []
 url = "https://app.mpboost.pro/delivery"
 
 option = webdriver.ChromeOptions()
 option.add_argument(f'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36')
+option.add_argument(f'--no-sandbox')
+option.add_argument(f'--disable-blink-features=AutomationControlled')
+option.headless = True
 
+        #Получаем строку, содержащую путь к chromedriver:
+path = Path(pathlib.Path.cwd(),"chromedriver") 
+print(path)
+
+driver = webdriver.Chrome(
+    executable_path="/home/tg_bot/chromedriver",
+    options=option
+    )
 
 phone ='+79959020721'
 password = 'DKeouw'
 
 def main():
     start_time = time.time()
-    
+    print('Start parsing...')
     try:
-        #Получаем строку, содержащую путь к chromedriver:
-        path = Path(pathlib.Path.cwd(),"chromedriver.exe") 
-        driver = webdriver.Chrome(
-    executable_path=path,
-    options=option
-    )
         
+
+        print('Open chrome...')
         driver.get(url=url)
         time.sleep(5)
         
+        print("Trying to login...")
         #Вводим телефон
         phone_input=driver.find_element(By.NAME,'Phone')
         phone_input.clear
@@ -47,6 +55,9 @@ def main():
         password_input.send_keys(Keys.ENTER)
         time.sleep(3)
         
+        print('Authorization successful!')
+        
+        print('Go to orders...')
         #переходим к заказам
         driver.get(url=url)
         time.sleep(3)
@@ -58,7 +69,7 @@ def main():
         driver.find_element(By.XPATH,"//button[contains(text(),'Готовы к выдаче')]").click()
         time.sleep(3)
         
-          
+        print('Scroll down')
         #Скролим страницу до самого низа, чтобы подгрузились все заказы
         last_height = driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         while True:
@@ -74,10 +85,12 @@ def main():
                 break
             last_height = new_height
         
+        print('Save data...')
         #сохраняем страницу
         with open('data.html','w', encoding="utf-8") as file:
             file.write(driver.page_source)
         
+        print('Get QR...')
         #Достаём qr-код
         #Открываем все заказы
         del_item = driver.find_elements(By.CLASS_NAME,"delivery__header.delivery-header")
@@ -125,7 +138,7 @@ def main():
         print("--- Script complete: %s minutes ---" % ((time.time() - start_time)/60))
 
 def get_items(file_path):
-    print("Обработка данных...")
+    print("Data processing...")
     
     with open(file_path, encoding="utf-8") as file:
         src=file.read()
@@ -174,23 +187,18 @@ def get_items(file_path):
     for r in result:
         result_dict.append(dict(zip(headers_json, r)))
         
-    with open(filename_json,'w', encoding='utf-8') as file:
+    with open(filename_json,'w', encoding="utf-8") as file:
         json.dump(result_dict,file, indent=4, ensure_ascii=False)
     
-    print(f'Файл {filename_json} успешно создан!')
+    print(f'File {filename_json} successfully created!')
     
     for f in pathlib.Path.cwd().glob("*.json"):
         if str(f).endswith("json") and f != Path(pathlib.Path.cwd(),filename_json):
             print(f,Path(pathlib.Path.cwd(),filename_json))
             f.unlink()
     
-
-def start():
-    schedule.every().day.at('10:01').do(main)
-    
-    while True:
-        schedule.run_pending()
     
        
 if __name__=='__main__':
-    start()
+    print('Script started!')
+    main()
