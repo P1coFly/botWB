@@ -16,7 +16,7 @@ import asyncio
 bot = Bot(token=TOKEN)
 storage = MemoryStorage()
 dp = Dispatcher(bot,storage=storage)
-db = DataBase('userdb.db')
+db = DataBase('/home/tg_bot/userdb.db')
 uniq_set = set()
 
 password=State()
@@ -62,13 +62,24 @@ async def set_password(msg:types.Message,state:FSMContext):
             except:
                 await bot.send_message(msg.from_user.id,"Нет информации о заказах на сегодня\n")
         global data
-        print(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()))
-        for index, item in enumerate(data):
-            if len(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()) & set(item.get("Адрес").lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split())) == len(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split())):
-                print(set(item.get("Адрес").lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()))
-                caption = f"{item.get('Адрес')}\n{item.get('Получатель')}\n{item.get('Телефон')}\n{item.get('Код')}\n{item.get('Товар')}"
-                await bot.send_photo(chat_id=msg.from_user.id,photo=b64decode(item.get('qr')),caption=caption)
-                
+        if data!=[]:
+            print(filename.translate(str.maketrans('', '', string.punctuation)))
+            print(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()))
+            for index, item in enumerate(data):
+                if len(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()) & set(item.get("Адрес").lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split())) == len(set(msg.text.lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split())):
+                    print(set(item.get("Адрес").lower().replace('-',' ').translate(str.maketrans('', '', string.punctuation)).split()))
+                    uniq_set.add(item.get("Адрес"))
+                if len(uniq_set) == 1:
+                    uniq_set.clear()
+                for index, item in enumerate(data):
+                    if len(set(msg.text.lower().replace('-', ' ').translate(str.maketrans('', '', string.punctuation)).split()) & set(item.get("Адрес").lower().replace('-', ' ').translate(str.maketrans('', '', string.punctuation)).split())) == len(set(msg.text.lower().replace('-', ' ').translate(str.maketrans('', '', string.punctuation)).split())):
+                        print(set(item.get("Адрес").lower().replace('-', ' ').translate(str.maketrans('', '', string.punctuation)).split()))
+                        caption = f"{item.get('Адрес')}\n{item.get('Получатель')}\n{item.get('Телефон')}\n{item.get('Код')}\n{item.get('Товар')}"
+                        await bot.send_photo(chat_id=msg.from_user.id, photo=b64decode(item.get('qr')), caption=caption)
+                else:
+                    await bot.send_message(msg.from_user.id, "Я нашёл несколько адресов. \nВведи адрес ещё раз")
+                    uniq_set.clear()
+            
 
 if __name__ == '__main__':
     print("Start work")
